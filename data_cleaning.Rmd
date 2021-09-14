@@ -1,0 +1,63 @@
+---
+title: "data_cleaning"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE}
+library(dplyr)
+library(tidyr)
+```
+
+
+## Data sources
+
+Read in the data from the [KNB dataset](https://knb.ecoinformatics.org/view/df35b.304.2)
+```{r}
+catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+glimpse(catch_original)
+summary(catch_original)
+```
+
+## Clean and reshape data
+
+- remove unnecessary columns
+```{r}
+catch_data <- catch_original %>% 
+  #select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+  select(-All, -notesRegCode)
+```
+
+- check column types
+- why is Chinook a character vector?
+```{r}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = as.numeric(Chinook)) # fails to convert - why?
+glimpse(catch_clean)
+```
+
+
+```{r}
+catch_NA <- catch_clean %>% 
+  filter(is.na(Chinook)) # find the NA - this doesn't give the row number
+
+i <- which(is.na(catch_clean$Chinook)) # this gives the row number - 401
+na <- catch_original[401,] # look at original data row - what went wrong? it's an "I" instead of a "1"
+
+# now that it's identified, fix it using mutate/ifelse statement
+
+catch_clean <- catch_data %>% 
+  mutate(Chinook = ifelse(Chinook =="I", "1", Chinook)) %>% # step 1
+  mutate(Chinook = as.numeric(Chinook)) # step 2
+
+```
+
+
+- reshape data
+
+## Join to regions definitions
