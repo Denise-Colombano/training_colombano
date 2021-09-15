@@ -22,6 +22,7 @@ Read in the data from the [KNB dataset](https://knb.ecoinformatics.org/view/df35
 catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
 glimpse(catch_original)
 summary(catch_original)
+str(catch_original)
 ```
 
 ## Clean and reshape data
@@ -54,10 +55,29 @@ na <- catch_original[401,] # look at original data row - what went wrong? it's a
 catch_clean <- catch_data %>% 
   mutate(Chinook = ifelse(Chinook =="I", "1", Chinook)) %>% # step 1
   mutate(Chinook = as.numeric(Chinook)) # step 2
-
 ```
 
+```{r}
+catch_long <- catch_clean %>% 
+  pivot_longer(cols = -c(Region, Year), names_to="Species", values_to="Catch")
+
+catch_CV <- catch_long %>% 
+  group_by(Species) %>% 
+  summarize(CV = sd(Catch)/ mean(Catch))
+```
 
 - reshape data
 
 ## Join to regions definitions
+```{r}
+region_defs <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1") %>% 
+  rename(Region=code)
+str(region_defs)
+```
+
+```{r}
+catch_joined <- catch_long %>% 
+  left_join(region_defs, by="Region")
+```
+
+
