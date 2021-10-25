@@ -23,6 +23,8 @@ catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/d
 glimpse(catch_original)
 summary(catch_original)
 str(catch_original)
+
+View(catch_original)
 ```
 
 ## Clean and reshape data
